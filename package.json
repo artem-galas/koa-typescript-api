@@ -1,0 +1,43 @@
+{
+  "name": "koa-ts-api",
+  "version": "1.0.0",
+  "description": "A Simple API server for learn Koa with Typescript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Artem Galas",
+  "keywords": [
+    "koa-api",
+    "koa",
+    "typescript",
+    "api",
+    "node-typescript",
+    "koa-typescript"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@types/koa": "^2.0.39",
+    "@types/koa-bodyparser": "^3.0.23",
+    "@types/koa-favicon": "^2.0.17",
+    "@types/koa-logger": "^2.0.2",
+    "@types/koa-passport": "^2.0.4",
+    "@types/koa-router": "^7.0.22",
+    "@types/mongoose": "^4.7.13",
+    "@types/node": "^7.0.22",
+    "@types/passport-jwt": "^2.0.19",
+    "gulp": "^3.9.1",
+    "gulp-nodemon": "^2.2.1",
+    "gulp-typescript": "^3.1.7",
+    "koa": "^2.2.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa-favicon": "^2.0.0",
+    "koa-logger": "^3.0.0",
+    "koa-passport": "^3.0.0",
+    "koa-router": "^7.2.0",
+    "mongoose": "^4.10.2",
+    "mongoose-beautiful-unique-validation": "^5.1.1",
+    "passport-jwt": "^2.2.1",
+    "typescript": "^2.3.3"
+  }
+}
