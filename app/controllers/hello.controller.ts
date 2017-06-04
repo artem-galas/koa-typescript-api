@@ -12,13 +12,15 @@ class HelloController {
 
   public router(): Router {
     return this.Router
-      .get('/', async (ctx) => {
-        ctx.body = {
-          data: {
-            text: 'World',
-          },
-        };
-      });
+      .get('/', this.index);
+  }
+
+  private async index(ctx) {
+    ctx.body = {
+      data: {
+        text: 'Hello World',
+      },
+    };
   }
 }
 
