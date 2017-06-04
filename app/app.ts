@@ -1,14 +1,18 @@
 import * as Koa from 'koa';
 import {middlewares} from './middelwares/middelwares';
 import {Middleware} from 'koa';
+import * as Router from 'koa-router';
+import HelloController from './controllers/hello.controller';
 
 class App {
 
   public app: Koa;
   private handlers: object = {};
+  private router: Router = new Router();
   constructor() {
     this.app = new Koa();
     this.middelwares();
+    this.routes();
   }
 
   private middelwares() {
@@ -34,6 +38,10 @@ class App {
     }
 
     return this.handlers[path] = handler;
+  }
+
+  private routes() {
+    this.app.use(HelloController.routes());
   }
 }
 
