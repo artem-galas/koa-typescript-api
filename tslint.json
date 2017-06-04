@@ -12,7 +12,10 @@
     "triple-equals": [
       true,
       "allow-null-check"
-    ]
+    ],
+    "array-type": [true, "generic"],
+    "ordered-imports": false,
+    "no-console": [true, "info", "warn", "error"]
   },
   "rulesDirectory": []
 }
