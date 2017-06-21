@@ -1,15 +1,20 @@
 import * as Koa from 'koa';
-import {middlewares} from './middelwares/middelwares';
 import {Middleware} from 'koa';
-import * as Router from 'koa-router';
-import HelloController from './controllers/hello.controller';
+
+import {middlewares} from './middelwares/middelwares';
+
+import MongooseLib from './libs/mongoose';
+
+import UserController from './controllers/user.controller';
 
 class App {
 
   public app: Koa;
   private handlers: object = {};
-  private router: Router = new Router();
+  private mongoose;
+
   constructor() {
+    this.mongoose = MongooseLib;
     this.app = new Koa();
     this.middelwares();
     this.routes();
@@ -41,7 +46,7 @@ class App {
   }
 
   private routes() {
-    this.app.use(HelloController.routes());
+    this.app.use(UserController.routes());
   }
 }
 

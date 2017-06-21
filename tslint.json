@@ -15,7 +15,11 @@
     ],
     "array-type": [true, "generic"],
     "ordered-imports": false,
-    "no-console": [true, "info", "warn", "error"]
+    "no-console": [true, "info", "warn", "error"],
+    "object-literal-sort-keys": false,
+    "object-literal-shorthand": false,
+    "no-empty": false,
+    "no-string-literal": false
   },
   "rulesDirectory": []
 }

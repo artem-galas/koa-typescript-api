@@ -12,10 +12,10 @@
     "strict": true,
     "noImplicitAny": false,
     "strictNullChecks": true,
-    "noImplicitThis": true,
+    "noImplicitThis": false,
 
     "noUnusedLocals": false,
-    "noUnusedParameters": true,
+    "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
 
