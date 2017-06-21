@@ -23,7 +23,8 @@ class UserController implements IController {
       .post('/', this.create.bind(this))
       .get('/', this.index.bind(this))
       .get('/:userName', this.show.bind(this))
-      .put('/:userName', this.update.bind(this));
+      .put('/:userName', this.update.bind(this))
+      .delete('/:userName', this.destroy.bind(this));
   }
 
   private async create(ctx: Koa.Context) {
@@ -64,8 +65,12 @@ class UserController implements IController {
   }
 
   private async update(ctx: Koa.Context) {
-    const user: IUserModel = this.user;
-    await user.update({name: ctx.request.body.name});
+    let user: IUserModel = this.user;
+    await user.update({
+      name: ctx.request.body.name,
+      email: ctx.request.body.email,
+    });
+    user = await User.findOne({username: user.username});
 
     this.renderCtx
       .renderSuccess(
@@ -73,6 +78,18 @@ class UserController implements IController {
         200,
         'users',
         user.toPlainObject());
+  }
+
+  private async destroy(ctx: Koa.Context) {
+    const user: IUserModel = this.user;
+    await user.remove();
+
+    this.renderCtx
+      .renderSuccess(
+        ctx,
+        202,
+      'user',
+      user.toPlainObject());
   }
 
   private async findUser(username, ctx: Koa.Context, next) {
