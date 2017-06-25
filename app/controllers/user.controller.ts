@@ -57,8 +57,14 @@ class UserController implements IController {
 
   private async show(ctx: Koa.Context, next) {
     await passport.authenticate('jwt', {session: false})(ctx, next);
-
     if (!ctx.state.user) {
+      this.renderCtx.renderFaild(
+        ctx,
+        400,
+        'users',
+        ['Invalid Token']);
+      return;
+    } else if (!ctx.state.user._id.equals(this.user._id)) {
       this.renderCtx.renderFaild(
         ctx,
         400,
