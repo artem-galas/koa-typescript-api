@@ -7,7 +7,6 @@ import * as jwt from 'jwt-simple';
 import config from '../config/default';
 
 import {RenderCtx} from '../libs/render.class';
-
 import {IController} from '../libs/controller.interface';
 
 class AuthController implements IController {
