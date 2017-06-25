@@ -5,4 +5,6 @@ export const middlewares: Array<string> = [
   'logger',
   'errors',
   'bodyparser',
+  'passport.initialize',
+  'passport.session',
 ];

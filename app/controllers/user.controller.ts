@@ -1,5 +1,6 @@
 import * as Router from 'koa-router';
 import * as Koa from 'koa';
+import * as passport from 'koa-passport';
 
 import {IController} from '../libs/controller.interface';
 import {RenderCtx} from '../libs/render.class';
@@ -54,8 +55,19 @@ class UserController implements IController {
         usersData);
   }
 
-  private async show(ctx: Koa.Context) {
-    const user: IUserModel = this.user;
+  private async show(ctx: Koa.Context, next) {
+    await passport.authenticate('jwt', {session: false})(ctx, next);
+
+    if (!ctx.state.user) {
+      this.renderCtx.renderFaild(
+        ctx,
+        400,
+        'users',
+        ['Invalid Token']);
+      return;
+    }
+
+    const user: IUserModel = ctx.state.user;
     this.renderCtx
       .renderSuccess(
         ctx,

@@ -12,7 +12,7 @@ export interface IUserModel extends Document {
   salt?: string;
   createdAt?: Date;
   updatedAt?: Date;
-  checkPassword(): string;
+  checkPassword(password: string): boolean;
   toPlainObject(): object;
 }
 
@@ -61,7 +61,7 @@ userSchema.virtual('password')
 
     if (password) {
       this.salt = crypto.randomBytes(config.crypto.hash.length).toString('base64');
-      this.passwordHash = crypto.pbkdf2Sync(password, this.salt, 1, config.crypto.hash.length, 'sha1');
+      this.passwordHash = crypto.pbkdf2Sync(password, this.salt, 1, config.crypto.hash.length, 'sha1').toString();
     } else {
       this.salt = undefined;
       this.passwordHash = undefined;
@@ -71,14 +71,14 @@ userSchema.virtual('password')
     return this._plainPassword;
   });
 
-userSchema.methods.checkPassword = function(password) {
+userSchema.methods.checkPassword = function(password): boolean {
   if (!password) {
     return false;
   }
   if (!this.passwordHash) {
     return false;
   }
-  return crypto.pbkdf2Sync(password, this.salt, 1, config.crypto.hash.length, 'sha1') === this.passwordHash;
+  return crypto.pbkdf2Sync(password, this.salt, 1, config.crypto.hash.length, 'sha1').toString() === this.passwordHash;
 };
 
 userSchema.methods.toPlainObject = function() {
