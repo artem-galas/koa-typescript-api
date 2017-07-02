@@ -2,12 +2,15 @@ import {Document, Schema, Model, model} from 'mongoose';
 import config from '../config/default';
 import * as crypto from 'crypto';
 
-export interface IUserModel extends Document {
-  id?: Schema.Types.ObjectId;
+export interface IUser {
   name: string;
   username: string;
   email: string;
   password: string;
+}
+
+export interface IUserModel extends IUser, Document {
+  id?: Schema.Types.ObjectId;
   passwordHash?: string;
   salt?: string;
   createdAt?: Date;
