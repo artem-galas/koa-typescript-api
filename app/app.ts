@@ -19,9 +19,6 @@ class App {
   private mongoose;
 
   constructor() {
-
-    console.log(config);
-
     this.mongoose = MongooseLib;
     this.app = new Koa();
     this.middelwares();
