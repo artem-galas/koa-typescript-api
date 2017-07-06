@@ -3,6 +3,7 @@ import * as request from 'request-promise-native';
 import * as chai from 'chai';
 
 import {Model} from 'mongoose';
+import * as mongoose from 'mongoose';
 import userFixtures from '../fixtures/user.fixture';
 
 import {IUserModel, IUser} from '../../models/user.model';
@@ -18,8 +19,10 @@ class UserControllerTest {
     chai.should();
   }
 
-  public static after() {
+  public static async after() {
     this.app.close();
+    console.log('Deleting test database');
+    await mongoose.connection.db.dropDatabase();
   }
 
   private User: Model<IUserModel>;

@@ -2,6 +2,7 @@ const gulp = require('gulp');
 const ts = require('gulp-typescript');
 const tslint = require('gulp-tslint');
 const nodemon = require('gulp-nodemon');
+const mocha = require('gulp-mocha');
 const assets = ['app/assets/*'];
 const appPath = 'app/**/*.ts';
 
@@ -31,6 +32,23 @@ gulp.task('watch', ['scripts'], () => {
 gulp.task('assets', () => {
   return gulp.src(assets)
     .pipe(gulp.dest('dist/assets'));
+});
+
+gulp.task('set-test-node-env', function() {
+  return process.env.NODE_ENV = 'test';
+});
+
+gulp.task('test-controllers', ['set-test-node-env', 'scripts'], () => {
+  return gulp.src('./dist/test/controllers', {read: false})
+    .pipe(mocha({
+      reporter: 'spec'
+    }))
+    .once('error', () => {
+      process.exit(1);
+    })
+    .once('end', () => {
+      process.exit();
+    })
 });
 
 gulp.task('nodemon', () => {

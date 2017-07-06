@@ -4,7 +4,7 @@ import * as passport from 'koa-passport';
 
 import * as jwt from 'jwt-simple';
 
-import config from '../config/default';
+import * as config from 'config';
 
 import {RenderCtx} from '../libs/render.class';
 import {IController} from '../libs/controller.interface';
@@ -35,7 +35,7 @@ class AuthController implements IController {
         id: ctx.state.user._id,
         name: ctx.state.user.name,
       };
-      const token = jwt.encode(payload, config.jwtSecret);
+      const token = jwt.encode(payload, config.get<string>('jwtSecret'));
 
       const renderData = {
         token: token,

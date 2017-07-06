@@ -1,5 +1,5 @@
 import {Document, Schema, Model, model} from 'mongoose';
-import config from '../config/default';
+import * as config from 'config';
 import * as crypto from 'crypto';
 
 export interface IUser {
@@ -63,8 +63,13 @@ userSchema.virtual('password')
     this._plainPassword = password;
 
     if (password) {
-      this.salt = crypto.randomBytes(config.crypto.hash.length).toString('base64');
-      this.passwordHash = crypto.pbkdf2Sync(password, this.salt, 1, config.crypto.hash.length, 'sha1').toString();
+      this.salt = crypto.randomBytes(config.get<number>('crypto.hash.length')).toString('base64');
+      this.passwordHash = crypto.pbkdf2Sync(
+        password,
+        this.salt,
+        1,
+        config.get<number>('crypto.hash.length'),
+        'sha1').toString();
     } else {
       this.salt = undefined;
       this.passwordHash = undefined;
@@ -81,7 +86,11 @@ userSchema.methods.checkPassword = function(password): boolean {
   if (!this.passwordHash) {
     return false;
   }
-  return crypto.pbkdf2Sync(password, this.salt, 1, config.crypto.hash.length, 'sha1').toString() === this.passwordHash;
+  return crypto.pbkdf2Sync(
+    password,
+      this.salt,
+      1,
+      config.get<number>('crypto.hash.length'), 'sha1').toString() === this.passwordHash;
 };
 
 userSchema.methods.toPlainObject = function() {

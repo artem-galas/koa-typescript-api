@@ -1,4 +1,4 @@
-import config from '../../config/default';
+import * as config from 'config';
 
 import * as passport from 'koa-passport';
 import {Strategy, ExtractJwt} from 'passport-jwt';
@@ -11,7 +11,7 @@ export class PassportJwtStrategy {
   constructor() {
     this.jwtStrategy = new Strategy({
         jwtFromRequest: ExtractJwt.fromHeader('authorization'),
-        secretOrKey: config.jwtSecret,
+        secretOrKey: config.get<string>('jwtSecret'),
       },
       (jwtPayload, done) => {
         User.findById(jwtPayload.id, (err, user: IUserModel) => {

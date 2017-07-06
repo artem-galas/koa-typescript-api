@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import config from '../config/default';
+import * as config from 'config';
 import * as uniqValidator from 'mongoose-beautiful-unique-validation';
 
 class MongooseLib {
@@ -7,7 +7,7 @@ class MongooseLib {
     if (process.env.MONGOOSE_DEBUG) {
       mongoose.set('debug', true);
     }
-    mongoose.connect(config.mongoose.uri, config.mongoose.options);
+    mongoose.connect(config.get<string>('mongoose.uri'), config.get<string>('mongoose.options'));
     mongoose.plugin(uniqValidator);
   }
 }

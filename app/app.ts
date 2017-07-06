@@ -1,4 +1,8 @@
 import * as Koa from 'koa';
+
+process.env.NODE_CONFIG_DIR = './app/config';
+import * as config from 'config';
+
 import {Middleware} from 'koa';
 
 import {middlewares} from './middelwares/middelwares';
@@ -15,6 +19,9 @@ class App {
   private mongoose;
 
   constructor() {
+
+    console.log(config);
+
     this.mongoose = MongooseLib;
     this.app = new Koa();
     this.middelwares();
