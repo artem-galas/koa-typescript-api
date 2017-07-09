@@ -29,11 +29,6 @@ gulp.task('watch', ['scripts'], () => {
   gulp.watch(appPath, ['scripts']);
 });
 
-gulp.task('assets', () => {
-  return gulp.src(assets)
-    .pipe(gulp.dest('dist/assets'));
-});
-
 gulp.task('set-test-node-env', function() {
   return process.env.NODE_ENV = 'test';
 });
@@ -59,3 +54,4 @@ gulp.task('nodemon', () => {
 });
 
 gulp.task('default', ['watch', 'nodemon']);
+gulp.task('test', ['test-controller']);

@@ -10,7 +10,7 @@ import { userFixtures, usersFixtures } from '../fixtures/user.fixture';
 
 import {IUserModel, IUser, User} from '../../models/user.model';
 
-@suite.only()
+@suite
 class AuthControllerTest {
   public static app;
 
