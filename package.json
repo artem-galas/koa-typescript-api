@@ -55,7 +55,7 @@
     "request-promise-native": "^1.0.4",
     "ts-node": "^3.2.0",
     "tslint": "^5.3.2",
-    "typescript": "^2.3.3"
+    "typescript": "2.3.3"
   },
   "devDependencies": {
     "@types/chai": "^4.0.1",
@@ -66,6 +66,6 @@
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.5",
     "tslint": "^5.3.2",
-    "typescript": "^2.3.3"
+    "typescript": "2.3.3"
   }
 }
