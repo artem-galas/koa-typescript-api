@@ -58,4 +58,4 @@ gulp.task('nodemon', () => {
   });
 });
 
-gulp.task('default', ['watch', 'assets', 'nodemon']);
+gulp.task('default', ['watch', 'nodemon']);
