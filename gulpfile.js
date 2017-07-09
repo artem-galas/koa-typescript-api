@@ -54,4 +54,4 @@ gulp.task('nodemon', () => {
 });
 
 gulp.task('default', ['watch', 'nodemon']);
-gulp.task('test', ['test-controller']);
+gulp.task('test', ['test-controllers']);
