@@ -20,12 +20,7 @@ class AuthController implements IController {
 
   public router(): Router {
     return this.Router
-      .post('/sign-up', this.signUp.bind(this))
       .post('/sign-in', this.signIn.bind(this));
-  }
-
-  private signUp(ctx: Koa.Context) {
-
   }
 
   private async signIn(ctx: Koa.Context, next) {

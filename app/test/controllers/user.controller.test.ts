@@ -1,4 +1,4 @@
-import { suite, test, slow, timeout } from 'mocha-typescript';
+import { suite, test } from 'mocha-typescript';
 import * as request from 'request-promise-native';
 import * as chai from 'chai';
 import server from '../../app';
