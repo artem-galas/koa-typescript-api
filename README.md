@@ -1,4 +1,4 @@
-# koa-typescript-api
+# koa-typescript-api [![Build Status](https://travis-ci.org/artem-galas/koa-typescript-api.svg?branch=master)](https://travis-ci.org/artem-galas/koa-typescript-api)
 This is a simple REST API written on Typescript using Koa.
 This project should help beginners and experienced developer how create a koa application using Typescript.
 
