@@ -56,14 +56,8 @@ class UserController implements IController {
   }
 
   private async show(ctx: Koa.Context, next) {
-    if (!await this.checkUser(ctx, next)) {
-      this.renderCtx.renderFaild(
-        ctx,
-        400,
-        'users',
-        ['Invalid Token']);
-      return;
-    }
+
+    await this.checkUser(ctx, next);
 
     const user: IUserModel = ctx.state.user;
     this.renderCtx
@@ -116,11 +110,11 @@ class UserController implements IController {
   private async checkUser(ctx: Koa.Context, next) {
     await passport.authenticate('jwt', {session: false})(ctx, next);
     if (!ctx.state.user) {
-      return false;
+      ctx.throw(400, 'Invalid Token');
     } else if (!ctx.state.user._id.equals(this.user._id)) {
-      return false;
+      ctx.throw(400, 'Invalid Token');
     } else {
-      return true;
+      return;
     }
   }
 }

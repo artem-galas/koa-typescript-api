@@ -15,8 +15,9 @@ export = async (ctx: Koa.Context, next) => {
       const renderCtx = new RenderCtx();
       renderCtx.renderFaild(ctx, 400, 'error', errors);
     } else if (e.status) {
-      ctx.status = e.statusCode || e.status || 500;
-      console.log(e.message, e.stack);
+      const status = e.statusCode || e.status || 500;
+      const renderCtx = new RenderCtx();
+      renderCtx.renderFaild(ctx, status, 'error', [e.message]);
     } else {
       ctx.throw(e);
       console.log(e.message, e.stack);

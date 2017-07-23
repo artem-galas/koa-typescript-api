@@ -6,11 +6,11 @@ import * as config from 'config';
 
 import {Model} from 'mongoose';
 import * as mongoose from 'mongoose';
-import { userFixtures, usersFixtures } from '../fixtures/user.fixture';
+import {userAuthFixtures, userFixtures, usersFixtures, UserFixture} from '../fixtures/user.fixture';
 
 import * as jwt from 'jwt-simple';
 
-import {IUserModel, IUser, User} from '../../models/user.model';
+import {IUser, IUserModel, User} from '../../models/user.model';
 
 /**
  * static before method run BEFORE @suite
@@ -18,8 +18,8 @@ import {IUserModel, IUser, User} from '../../models/user.model';
  * static after and after the same of before
  */
 
-@suite.only()
-class UserControllerTest {
+@suite.only('User Controller without Authorize')
+class UserControllerOutAuth {
 
   public static app;
 
@@ -32,25 +32,22 @@ class UserControllerTest {
   public static async after() {
     console.log('Test Server CLOSE');
     this.app.close();
+    console.log('DROP test database');
+    await mongoose.connection.db.dropDatabase();
   }
 
   private User: Model<IUserModel>;
   private requestUrl = `${config.get('server.url')}/users`;
-  private authUser: IUserModel;
-  private token: string;
+  private userFixtures = userFixtures;
+  private usersFixtures: Array<UserFixture> = [];
+  private UserFixture: UserFixture;
 
   public async before() {
-    console.log('Authorize user');
-    this.authUser = await User.create(userFixtures);
-    const payload = {
-      id: this.authUser._id,
-      name: this.authUser.name,
-    };
-    this.token = jwt.encode(payload, config.get<string>('jwtSecret'));
     console.log('Create USERS Fixtures');
-    for (const user of usersFixtures) {
-      await User.create(user);
+    for (let i = 0; i <= 5; i++) {
+      usersFixtures.push(new UserFixture());
     }
+    console.log(usersFixtures);
   }
 
   public async after() {
@@ -64,14 +61,14 @@ class UserControllerTest {
       method: 'POST',
       url: `${this.requestUrl}`,
       json: true,
-      body: userFixtures,
+      body: this.userFixtures,
       resolveWithFullResponse: true,
     });
 
     const responseBodyData = {
-      name: userFixtures.name,
-      username: userFixtures.username,
-      email: userFixtures.email,
+      name: this.userFixtures.name,
+      username: this.userFixtures.username,
+      email: this.userFixtures.email,
     };
 
     response.statusCode.should.equal(201);
@@ -83,7 +80,7 @@ class UserControllerTest {
   public async index() {
     const response = await request({
       method: 'GET',
-      url: `${this.requestUrl}/users`,
+      url: `${this.requestUrl}`,
       json: true,
       resolveWithFullResponse: true,
     });
@@ -91,13 +88,58 @@ class UserControllerTest {
     const responseBodyData = response.body.data;
     const indexAssert = 0;
 
-    // Remove unused property
-    delete usersFixtures[indexAssert].password;
-
     response.statusCode.should.equal(200);
     responseBodyData.should.to.be.a('array');
-    responseBodyData.length.should.equal(usersFixtures.length);
-    responseBodyData[indexAssert].should.to.have.deep.equal(usersFixtures[indexAssert]);
+    responseBodyData.length.should.equal(this.usersFixtures.length);
+    responseBodyData[indexAssert].should.to.have.deep.equal(this.usersFixtures[indexAssert]);
+  }
+}
+
+@suite('User Controller with Authorize')
+class UserControllerWithAuth {
+  public static app;
+
+  public static before() {
+    console.log(`Test Server RUN on ${config.get('server.port')} port`);
+    this.app = server.listen(config.get<number>('server.port'));
+    chai.should();
+  }
+
+  public static async after() {
+    console.log('Test Server CLOSE');
+    this.app.close();
+    console.log('DROP test database');
+    await mongoose.connection.db.dropDatabase();
+  }
+
+  private User: Model<IUserModel>;
+  private requestUrl = `${config.get('server.url')}/users`;
+  private authUser: IUserModel;
+  private token: string;
+  private userFixtures = userFixtures;
+  private usersFixtures = usersFixtures;
+
+  public async before() {
+    console.log('Create Authorize user');
+    this.authUser = await User.create(userAuthFixtures);
+    const payload = {
+      id: this.authUser._id,
+      name: this.authUser.name,
+    };
+    this.token = jwt.encode(payload, config.get<string>('jwtSecret'));
+
+    console.log('Create USERS Fixtures');
+
+    console.log(this.usersFixtures);
+
+    for (const user of this.usersFixtures) {
+      await User.create(user);
+    }
+  }
+
+  public async after() {
+    console.log('DROP test database');
+    await mongoose.connection.db.dropDatabase();
   }
 
   @test('GET /users/:username -> Should return current user profile')
@@ -107,7 +149,7 @@ class UserControllerTest {
       headers: {
         authorization: `${this.token}`,
       },
-      url: `${this.requestUrl}/${userFixtures.username}`,
+      url: `${this.requestUrl}/${this.authUser.username}`,
       json: true,
       resolveWithFullResponse: true,
     });
@@ -119,7 +161,7 @@ class UserControllerTest {
     response.body.data.should.to.deep.equal(responseBodyData);
   }
 
-  @test.only('GET /users/:username -> Should return ERROR 400 "Invalid Token"')
+  @test('GET /users/:username -> Should return ERROR 400 "Invalid Token"')
   public async showError() {
     // Send different username to url
     const response = await request({
@@ -127,15 +169,29 @@ class UserControllerTest {
       headers: {
         authorization: `${this.token}`,
       },
-      url: `${this.requestUrl}/${usersFixtures[1].username}`,
+      url: `${this.requestUrl}/${this.usersFixtures[1].username}`,
       json: true,
       resolveWithFullResponse: true,
       simple: false,
     });
 
     response.statusCode.should.equal(400);
-    response.body.type.should.equal('users');
+    response.body.type.should.equal('error');
     response.body.errors.should.to.have.members(['Invalid Token']);
   }
 
+  @test('GET /users/:username -> Should return ERROR 404 "Not Found"')
+  public async showErrorNotFound() {
+    // Send different username to url
+    const response = await request({
+      method: 'GET',
+      url: `${this.requestUrl}/not_found`,
+      json: true,
+      resolveWithFullResponse: true,
+      simple: false,
+    });
+
+    response.statusCode.should.equal(404);
+    response.body.errors.should.to.have.members(['Not Found']);
+  }
 }
