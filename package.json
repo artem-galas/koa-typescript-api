@@ -35,6 +35,7 @@
     "@types/request": "0.0.45",
     "@types/request-promise-native": "^1.0.5",
     "config": "^1.26.1",
+    "del": "^3.0.0",
     "faker": "^4.1.0",
     "gulp": "^3.9.1",
     "gulp-nodemon": "^2.2.1",

@@ -56,15 +56,7 @@ class UserController implements IController {
   }
 
   private async show(ctx: Koa.Context, next) {
-    await passport.authenticate('jwt', {session: false})(ctx, next);
-    if (!ctx.state.user) {
-      this.renderCtx.renderFaild(
-        ctx,
-        400,
-        'users',
-        ['Invalid Token']);
-      return;
-    } else if (!ctx.state.user._id.equals(this.user._id)) {
+    if (!await this.checkUser(ctx, next)) {
       this.renderCtx.renderFaild(
         ctx,
         400,
@@ -82,8 +74,9 @@ class UserController implements IController {
         user.toPlainObject());
   }
 
-  private async update(ctx: Koa.Context) {
-    let user: IUserModel = this.user;
+  private async update(ctx: Koa.Context, next) {
+    await this.checkUser(ctx, next);
+    let user: IUserModel = ctx.state.user;
     await user.update({
       name: ctx.request.body.name,
       email: ctx.request.body.email,
@@ -98,8 +91,9 @@ class UserController implements IController {
         user.toPlainObject());
   }
 
-  private async destroy(ctx: Koa.Context) {
-    const user: IUserModel = this.user;
+  private async destroy(ctx: Koa.Context, next) {
+    await this.checkUser(ctx, next);
+    const user: IUserModel = ctx.state.user;
     await user.remove();
 
     this.renderCtx
@@ -117,6 +111,17 @@ class UserController implements IController {
       return ctx.throw(404);
     }
     return next();
+  }
+
+  private async checkUser(ctx: Koa.Context, next) {
+    await passport.authenticate('jwt', {session: false})(ctx, next);
+    if (!ctx.state.user) {
+      return false;
+    } else if (!ctx.state.user._id.equals(this.user._id)) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }
 

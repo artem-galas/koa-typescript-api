@@ -31,7 +31,7 @@ class AuthControllerTest {
   public async before() {
     console.log('Create USERS Fixtures');
 
-    for (const user of usersFixtures.users) {
+    for (const user of usersFixtures) {
       await User.create(user);
     }
   }
@@ -41,9 +41,9 @@ class AuthControllerTest {
     await mongoose.connection.db.dropDatabase();
   }
 
-  @test('POST /auth/sign-in -> should return jwt')
+  @test('POST /auth/sign-in Valid Data -> should authorize user and return jwt')
   public async signIn() {
-    const authUser = usersFixtures.users[0];
+    const authUser = usersFixtures[0];
 
     const response = await request({
       method: 'POST',
@@ -64,9 +64,9 @@ class AuthControllerTest {
     responseBodyData.should.to.have.keys('token', 'name');
   }
 
-  @test('POST /auth/sign-in -> should return 400 ERROR')
-  public async signInError() {
-    const authUser = usersFixtures.users[0];
+  @test('POST /auth/sign-in Invalid Password -> should return 400 ERROR "Invalid Login Credential"')
+  public async signInPasswordError() {
+    const authUser = usersFixtures[0];
 
     // Send wrong password
     const response = await request({
@@ -76,6 +76,28 @@ class AuthControllerTest {
       body: {
         username: authUser.username,
         password: '123456789',
+      },
+      resolveWithFullResponse: true,
+      simple: false,
+    });
+
+    response.statusCode.should.equal(400);
+    response.body.type.should.equal('error');
+    response.body.errors.should.to.have.members(['Invalid Login Credential']);
+  }
+
+  @test('POST /auth/sign-in Invalid Username -> should return 400 ERROR "Invalid Login Credential"')
+  public async signInUsernameError() {
+    const authUser = usersFixtures[0];
+
+    // Send wrong username
+    const response = await request({
+      method: 'POST',
+      url: `${this.requestUrl}/auth/sign-in`,
+      json: true,
+      body: {
+        username: usersFixtures[1].username,
+        password: usersFixtures[0].password,
       },
       resolveWithFullResponse: true,
       simple: false,

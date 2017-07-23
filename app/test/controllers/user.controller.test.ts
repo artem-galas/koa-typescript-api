@@ -8,6 +8,8 @@ import {Model} from 'mongoose';
 import * as mongoose from 'mongoose';
 import { userFixtures, usersFixtures } from '../fixtures/user.fixture';
 
+import * as jwt from 'jwt-simple';
+
 import {IUserModel, IUser, User} from '../../models/user.model';
 
 /**
@@ -16,14 +18,14 @@ import {IUserModel, IUser, User} from '../../models/user.model';
  * static after and after the same of before
  */
 
-@suite
+@suite.only()
 class UserControllerTest {
 
   public static app;
 
   public static before() {
-    console.log(`Test Server RUN on ${3333} port`);
-    this.app = server.listen(3333);
+    console.log(`Test Server RUN on ${config.get('server.port')} port`);
+    this.app = server.listen(config.get<number>('server.port'));
     chai.should();
   }
 
@@ -33,12 +35,20 @@ class UserControllerTest {
   }
 
   private User: Model<IUserModel>;
-  private requestUrl = config.get('server.url');
+  private requestUrl = `${config.get('server.url')}/users`;
+  private authUser: IUserModel;
+  private token: string;
 
   public async before() {
+    console.log('Authorize user');
+    this.authUser = await User.create(userFixtures);
+    const payload = {
+      id: this.authUser._id,
+      name: this.authUser.name,
+    };
+    this.token = jwt.encode(payload, config.get<string>('jwtSecret'));
     console.log('Create USERS Fixtures');
-
-    for (const user of usersFixtures.users) {
+    for (const user of usersFixtures) {
       await User.create(user);
     }
   }
@@ -52,16 +62,16 @@ class UserControllerTest {
   public async create() {
     const response = await request({
       method: 'POST',
-      url: 'http://localhost:3333/users',
+      url: `${this.requestUrl}`,
       json: true,
-      body: userFixtures.user,
+      body: userFixtures,
       resolveWithFullResponse: true,
     });
 
     const responseBodyData = {
-      name: userFixtures.user.name,
-      username: userFixtures.user.username,
-      email: userFixtures.user.email,
+      name: userFixtures.name,
+      username: userFixtures.username,
+      email: userFixtures.email,
     };
 
     response.statusCode.should.equal(201);
@@ -82,11 +92,50 @@ class UserControllerTest {
     const indexAssert = 0;
 
     // Remove unused property
-    delete usersFixtures.users[indexAssert].password;
+    delete usersFixtures[indexAssert].password;
 
     response.statusCode.should.equal(200);
     responseBodyData.should.to.be.a('array');
-    responseBodyData.length.should.equal(usersFixtures.users.length);
-    responseBodyData[indexAssert].should.to.have.deep.equal(usersFixtures.users[indexAssert]);
+    responseBodyData.length.should.equal(usersFixtures.length);
+    responseBodyData[indexAssert].should.to.have.deep.equal(usersFixtures[indexAssert]);
   }
+
+  @test('GET /users/:username -> Should return current user profile')
+  public async show() {
+    const response = await request({
+      method: 'GET',
+      headers: {
+        authorization: `${this.token}`,
+      },
+      url: `${this.requestUrl}/${userFixtures.username}`,
+      json: true,
+      resolveWithFullResponse: true,
+    });
+
+    const responseBodyData = this.authUser.toPlainObject();
+
+    response.statusCode.should.equal(200);
+    response.body.type.should.equal('users');
+    response.body.data.should.to.deep.equal(responseBodyData);
+  }
+
+  @test.only('GET /users/:username -> Should return ERROR 400 "Invalid Token"')
+  public async showError() {
+    // Send different username to url
+    const response = await request({
+      method: 'GET',
+      headers: {
+        authorization: `${this.token}`,
+      },
+      url: `${this.requestUrl}/${usersFixtures[1].username}`,
+      json: true,
+      resolveWithFullResponse: true,
+      simple: false,
+    });
+
+    response.statusCode.should.equal(400);
+    response.body.type.should.equal('users');
+    response.body.errors.should.to.have.members(['Invalid Token']);
+  }
+
 }

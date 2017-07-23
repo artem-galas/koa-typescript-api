@@ -4,6 +4,8 @@ const tslint = require('gulp-tslint');
 const nodemon = require('gulp-nodemon');
 const mocha = require('gulp-mocha');
 const sourcemaps = require('gulp-sourcemaps');
+
+const del = require('del');
 const assets = ['app/assets/*'];
 const appPath = 'app/**/*.ts';
 
@@ -56,5 +58,9 @@ gulp.task('nodemon', () => {
   });
 });
 
-gulp.task('default', ['watch', 'nodemon']);
-gulp.task('test', ['test-controllers']);
+gulp.task('clean', function(){
+  return del(['dist/**', '!dist'], {force:true});
+});
+
+gulp.task('default', ['clean', 'watch', 'nodemon']);
+gulp.task('test', ['clean', 'test-controllers']);
