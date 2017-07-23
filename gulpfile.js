@@ -3,6 +3,7 @@ const ts = require('gulp-typescript');
 const tslint = require('gulp-tslint');
 const nodemon = require('gulp-nodemon');
 const mocha = require('gulp-mocha');
+const sourcemaps = require('gulp-sourcemaps');
 const assets = ['app/assets/*'];
 const appPath = 'app/**/*.ts';
 
@@ -20,8 +21,10 @@ gulp.task('lint', () => {
 
 gulp.task('scripts', ['lint'], () => {
   return tsProject.src()
+    .pipe(sourcemaps.init())
     .pipe(tsProject())
     .js
+    .pipe(sourcemaps.write(('maps')))
     .pipe(gulp.dest('dist'));
 });
 

@@ -38,6 +38,7 @@
     "faker": "^4.1.0",
     "gulp": "^3.9.1",
     "gulp-nodemon": "^2.2.1",
+    "gulp-sourcemaps": "^2.6.0",
     "gulp-typescript": "^3.1.7",
     "jsonwebtoken": "^7.4.1",
     "jwt-simple": "^0.5.1",
