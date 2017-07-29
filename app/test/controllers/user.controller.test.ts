@@ -6,7 +6,7 @@ import * as config from 'config';
 
 import {Model} from 'mongoose';
 import * as mongoose from 'mongoose';
-import {userAuthFixtures, userFixtures, usersFixtures, UserFixture} from '../fixtures/user.fixture';
+import {userData, usersData} from '../fixtures/user.fixture';
 
 import * as jwt from 'jwt-simple';
 
@@ -15,10 +15,9 @@ import {IUser, IUserModel, User} from '../../models/user.model';
 /**
  * static before method run BEFORE @suite
  * before method run for EACH @test
- * static after and after the same of before
  */
 
-@suite.only('User Controller without Authorize')
+@suite('User Controller without Authorize')
 class UserControllerOutAuth {
 
   public static app;
@@ -30,28 +29,22 @@ class UserControllerOutAuth {
   }
 
   public static async after() {
-    console.log('Test Server CLOSE');
     this.app.close();
-    console.log('DROP test database');
     await mongoose.connection.db.dropDatabase();
   }
 
   private User: Model<IUserModel>;
   private requestUrl = `${config.get('server.url')}/users`;
-  private userFixtures = userFixtures;
-  private usersFixtures: Array<UserFixture> = [];
-  private UserFixture: UserFixture;
+  private userData = userData;
+  private usersFixtures: Array<IUserModel> = [];
 
   public async before() {
-    console.log('Create USERS Fixtures');
-    for (let i = 0; i <= 5; i++) {
-      usersFixtures.push(new UserFixture());
+    for (const user of usersData) {
+      this.usersFixtures.push(await User.create(user));
     }
-    console.log(usersFixtures);
   }
 
   public async after() {
-    console.log('DROP test database');
     await mongoose.connection.db.dropDatabase();
   }
 
@@ -61,14 +54,14 @@ class UserControllerOutAuth {
       method: 'POST',
       url: `${this.requestUrl}`,
       json: true,
-      body: this.userFixtures,
+      body: this.userData,
       resolveWithFullResponse: true,
     });
 
     const responseBodyData = {
-      name: this.userFixtures.name,
-      username: this.userFixtures.username,
-      email: this.userFixtures.email,
+      name: this.userData.name,
+      username: this.userData.username,
+      email: this.userData.email,
     };
 
     response.statusCode.should.equal(201);
@@ -91,7 +84,7 @@ class UserControllerOutAuth {
     response.statusCode.should.equal(200);
     responseBodyData.should.to.be.a('array');
     responseBodyData.length.should.equal(this.usersFixtures.length);
-    responseBodyData[indexAssert].should.to.have.deep.equal(this.usersFixtures[indexAssert]);
+    responseBodyData[indexAssert].should.to.have.deep.equal(this.usersFixtures[indexAssert].toPlainObject());
   }
 }
 
@@ -106,9 +99,7 @@ class UserControllerWithAuth {
   }
 
   public static async after() {
-    console.log('Test Server CLOSE');
     this.app.close();
-    console.log('DROP test database');
     await mongoose.connection.db.dropDatabase();
   }
 
@@ -116,29 +107,22 @@ class UserControllerWithAuth {
   private requestUrl = `${config.get('server.url')}/users`;
   private authUser: IUserModel;
   private token: string;
-  private userFixtures = userFixtures;
-  private usersFixtures = usersFixtures;
+  private usersFixtures: Array<IUserModel> = [];
 
   public async before() {
-    console.log('Create Authorize user');
-    this.authUser = await User.create(userAuthFixtures);
+    this.authUser = await User.create(userData);
     const payload = {
       id: this.authUser._id,
       name: this.authUser.name,
     };
     this.token = jwt.encode(payload, config.get<string>('jwtSecret'));
 
-    console.log('Create USERS Fixtures');
-
-    console.log(this.usersFixtures);
-
-    for (const user of this.usersFixtures) {
-      await User.create(user);
+    for (const user of usersData) {
+      this.usersFixtures.push(await User.create(user));
     }
   }
 
   public async after() {
-    console.log('DROP test database');
     await mongoose.connection.db.dropDatabase();
   }
 

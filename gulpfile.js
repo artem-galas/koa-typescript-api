@@ -58,7 +58,7 @@ gulp.task('nodemon', () => {
   });
 });
 
-gulp.task('clean', function(){
+gulp.task('clean', () => {
   return del(['dist/**', '!dist'], {force:true});
 });
 

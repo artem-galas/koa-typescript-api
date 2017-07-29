@@ -5,7 +5,7 @@ import * as passport from 'koa-passport';
 import {IController} from '../libs/controller.interface';
 import {RenderCtx} from '../libs/render.class';
 
-import {IUserModel, User} from '../models/user.model';
+import {IPlainUser, IUserModel, User} from '../models/user.model';
 
 class UserController implements IController {
 
@@ -46,7 +46,7 @@ class UserController implements IController {
 
   private async index(ctx: Koa.Context) {
     const users: Array<IUserModel> = await User.find({});
-    const usersData = users.map((user: IUserModel) => user.toPlainObject());
+    const usersData: Array<IPlainUser> = users.map((user: IUserModel) => user.toPlainObject());
     this.renderCtx
       .renderSuccess(
         ctx,
@@ -56,9 +56,7 @@ class UserController implements IController {
   }
 
   private async show(ctx: Koa.Context, next) {
-
     await this.checkUser(ctx, next);
-
     const user: IUserModel = ctx.state.user;
     this.renderCtx
       .renderSuccess(
