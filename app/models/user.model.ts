@@ -1,4 +1,5 @@
 import {Document, Schema, Model, model} from 'mongoose';
+import * as mongoose from 'mongoose';
 import * as config from 'config';
 import * as crypto from 'crypto';
 
@@ -12,8 +13,7 @@ export interface IUser extends IPlainUser {
   password: string;
 }
 
-export interface IUserModel extends IUser, Document {
-  id?: Schema.Types.ObjectId;
+export interface IUserModel extends IUser, mongoose.Document {
   passwordHash?: string;
   salt?: string;
   createdAt?: Date;
@@ -23,6 +23,7 @@ export interface IUserModel extends IUser, Document {
 }
 
 const userSchema: Schema = new Schema({
+  id: mongoose.Schema.Types.ObjectId,
   name: {
     type: String,
     required: 'Name is required',

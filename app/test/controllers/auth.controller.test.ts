@@ -1,43 +1,25 @@
 import { suite, test } from 'mocha-typescript';
 import * as request from 'request-promise-native';
-import * as chai from 'chai';
-import server from '../../app';
-import * as config from 'config';
 
 import {Model} from 'mongoose';
-import * as mongoose from 'mongoose';
-import { userData, usersData } from '../fixtures/user.fixture';
+import { usersData } from '../fixtures/user.fixture';
 
-import {IUserModel, IUser, User} from '../../models/user.model';
+import {IUserModel} from '../../models/user.model';
+import {TestController} from './test.controller.interface';
 
-@suite
-class AuthControllerTest {
-  public static app;
-
-  public static before() {
-    console.log(`Test Server RUN on ${config.get('server.port')} port`);
-    this.app = server.listen(config.get<number>('server.port'));
-    chai.should();
-  }
-
-  public static async after() {
-    this.app.close();
-  }
-
-  private requestUrl: string = `${config.get('server.url')}/auth`;
-  private usersFixtures: Array<IUserModel> = [];
+@suite('Auth Controller')
+class AuthControllerTest extends TestController {
   private authUser: IUserModel;
   private userDataIndex: number = 0;
+  private password = usersData[this.userDataIndex].password;
 
-  public async before() {
-    for (const user of usersData) {
-      this.usersFixtures.push(await User.create(user));
-    }
-    this.authUser = this.usersFixtures[this.userDataIndex];
+  constructor() {
+    super('auth');
   }
 
-  public async after() {
-    await mongoose.connection.db.dropDatabase();
+  public async before() {
+    await super.before();
+    this.authUser = this.usersFixtures[this.userDataIndex];
   }
 
   @test('POST /auth/sign-in Valid Data -> should authorize user and return jwt')
@@ -49,7 +31,7 @@ class AuthControllerTest {
       json: true,
       body: {
         username: this.authUser.username,
-        password: usersData[this.userDataIndex].password,
+        password: this.password,
       },
       resolveWithFullResponse: true,
     });
@@ -70,7 +52,7 @@ class AuthControllerTest {
       json: true,
       body: {
         username: this.authUser.username,
-        password: this.usersFixtures[this.userDataIndex + 1],
+        password: usersData[this.userDataIndex + 1].password,
       },
       resolveWithFullResponse: true,
       simple: false,
@@ -89,7 +71,7 @@ class AuthControllerTest {
       json: true,
       body: {
         username: this.usersFixtures[this.userDataIndex + 1].username,
-        password: usersData[this.userDataIndex].password,
+        password: this.password,
       },
       resolveWithFullResponse: true,
       simple: false,

@@ -11,7 +11,7 @@
 
     "strict": true,
     "noImplicitAny": false,
-    "strictNullChecks": true,
+    "strictNullChecks": false,
     "noImplicitThis": false,
 
     "noUnusedLocals": false,

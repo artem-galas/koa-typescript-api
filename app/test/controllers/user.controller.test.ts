@@ -1,16 +1,14 @@
 import { suite, test } from 'mocha-typescript';
 import * as request from 'request-promise-native';
-import * as chai from 'chai';
-import server from '../../app';
 import * as config from 'config';
 
 import {Model} from 'mongoose';
-import * as mongoose from 'mongoose';
-import {userData, usersData} from '../fixtures/user.fixture';
+import {userData} from '../fixtures/user.fixture';
 
 import * as jwt from 'jwt-simple';
 
-import {IUser, IUserModel, User} from '../../models/user.model';
+import { IUserModel, User} from '../../models/user.model';
+import {TestController} from './test.controller.interface';
 
 /**
  * static before method run BEFORE @suite
@@ -18,34 +16,10 @@ import {IUser, IUserModel, User} from '../../models/user.model';
  */
 
 @suite('User Controller without Authorize')
-class UserControllerOutAuth {
+class UserControllerOutAuth extends TestController {
 
-  public static app;
-
-  public static before() {
-    console.log(`Test Server RUN on ${config.get('server.port')} port`);
-    this.app = server.listen(config.get<number>('server.port'));
-    chai.should();
-  }
-
-  public static async after() {
-    this.app.close();
-    await mongoose.connection.db.dropDatabase();
-  }
-
-  private User: Model<IUserModel>;
-  private requestUrl = `${config.get('server.url')}/users`;
-  private userData = userData;
-  private usersFixtures: Array<IUserModel> = [];
-
-  public async before() {
-    for (const user of usersData) {
-      this.usersFixtures.push(await User.create(user));
-    }
-  }
-
-  public async after() {
-    await mongoose.connection.db.dropDatabase();
+  constructor() {
+    super('users');
   }
 
   @test('POST /users -> should create a new User')
@@ -89,25 +63,13 @@ class UserControllerOutAuth {
 }
 
 @suite('User Controller with Authorize')
-class UserControllerWithAuth {
-  public static app;
-
-  public static before() {
-    console.log(`Test Server RUN on ${config.get('server.port')} port`);
-    this.app = server.listen(config.get<number>('server.port'));
-    chai.should();
-  }
-
-  public static async after() {
-    this.app.close();
-    await mongoose.connection.db.dropDatabase();
-  }
-
-  private User: Model<IUserModel>;
-  private requestUrl = `${config.get('server.url')}/users`;
+class UserControllerWithAuth extends TestController {
   private authUser: IUserModel;
   private token: string;
-  private usersFixtures: Array<IUserModel> = [];
+
+  constructor() {
+    super('users');
+  }
 
   public async before() {
     this.authUser = await User.create(userData);
@@ -117,13 +79,7 @@ class UserControllerWithAuth {
     };
     this.token = jwt.encode(payload, config.get<string>('jwtSecret'));
 
-    for (const user of usersData) {
-      this.usersFixtures.push(await User.create(user));
-    }
-  }
-
-  public async after() {
-    await mongoose.connection.db.dropDatabase();
+    await super.before();
   }
 
   @test('GET /users/:username -> Should return current user profile')
