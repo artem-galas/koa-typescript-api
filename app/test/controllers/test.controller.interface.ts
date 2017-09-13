@@ -5,6 +5,7 @@ import * as config from 'config';
 import * as mongoose from 'mongoose';
 import {userData, usersData} from '../fixtures/user.fixture';
 import {IUserModel, User} from '../../models/user.model';
+import {bookData} from '../fixtures/book.fixture';
 
 export interface ITestController {
   requestUrl: string;
@@ -29,6 +30,7 @@ export class TestController implements ITestController {
   public requestUrl: string;
   public userData = userData;
   public usersFixtures: Array<IUserModel> = [];
+  public bookData = bookData;
 
   constructor(path: string) {
     this.requestUrl = `${config.get<string>('server.url')}/${path}`;

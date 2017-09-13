@@ -11,6 +11,7 @@ import MongooseLib from './libs/mongoose';
 
 import UserController from './controllers/user.controller';
 import AuthController from './controllers/auth.controller';
+import BookControler from './controllers/book.controller';
 
 class App {
 
@@ -53,6 +54,7 @@ class App {
   private routes() {
     this.app.use(UserController.routes());
     this.app.use(AuthController.routes());
+    this.app.use(BookControler.routes());
   }
 }
 
