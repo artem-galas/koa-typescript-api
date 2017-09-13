@@ -1,57 +1,37 @@
 import { suite, test } from 'mocha-typescript';
 import * as request from 'request-promise-native';
-import * as chai from 'chai';
-import server from '../../app';
-import * as config from 'config';
 
 import {Model} from 'mongoose';
-import * as mongoose from 'mongoose';
-import { userFixtures, usersFixtures } from '../fixtures/user.fixture';
+import { usersData } from '../fixtures/user.fixture';
 
-import {IUserModel, IUser, User} from '../../models/user.model';
+import {IUserModel} from '../../models/user.model';
+import {TestController} from './test.controller.interface';
 
-@suite
-class AuthControllerTest {
-  public static app;
+@suite('Auth Controller')
+class AuthControllerTest extends TestController {
+  private authUser: IUserModel;
+  private userDataIndex: number = 0;
+  private password = usersData[this.userDataIndex].password;
 
-  public static before() {
-    console.log(`Test Server RUN on ${config.get('server.port')} port`);
-    this.app = server.listen(config.get<number>('server.port'));
-    chai.should();
+  constructor() {
+    super('auth');
   }
-
-  public static async after() {
-    console.log('Test Server CLOSE');
-    this.app.close();
-  }
-
-  private User: Model<IUserModel>;
-  private requestUrl = config.get('server.url');
 
   public async before() {
-    console.log('Create USERS Fixtures');
-
-    for (const user of usersFixtures.users) {
-      await User.create(user);
-    }
+    await super.before();
+    this.authUser = this.usersFixtures[this.userDataIndex];
   }
 
-  public async after() {
-    console.log('DROP test database');
-    await mongoose.connection.db.dropDatabase();
-  }
-
-  @test('POST /auth/sign-in -> should return jwt')
+  @test('POST /auth/sign-in Valid Data -> should authorize user and return jwt')
   public async signIn() {
-    const authUser = usersFixtures.users[0];
-
+    console.log(this.authUser.password);
     const response = await request({
       method: 'POST',
-      url: `${this.requestUrl}/auth/sign-in`,
+      url: `${this.requestUrl}/sign-in`,
       json: true,
       body: {
-        username: authUser.username,
-        password: authUser.password,
+        username: this.authUser.username,
+        password: this.password,
       },
       resolveWithFullResponse: true,
     });
@@ -60,22 +40,38 @@ class AuthControllerTest {
 
     response.statusCode.should.equal(200);
     response.body.type.should.equal('auth');
-    responseBodyData.name.should.equal(authUser.name);
+    responseBodyData.name.should.equal(this.authUser.name);
     responseBodyData.should.to.have.keys('token', 'name');
   }
 
-  @test('POST /auth/sign-in -> should return 400 ERROR')
-  public async signInError() {
-    const authUser = usersFixtures.users[0];
-
-    // Send wrong password
+  @test('POST /auth/sign-in Invalid Password -> should return 400 ERROR "Invalid Login Credential"')
+  public async signInPasswordError() {
     const response = await request({
       method: 'POST',
-      url: `${this.requestUrl}/auth/sign-in`,
+      url: `${this.requestUrl}/sign-in`,
       json: true,
       body: {
-        username: authUser.username,
-        password: '123456789',
+        username: this.authUser.username,
+        password: usersData[this.userDataIndex + 1].password,
+      },
+      resolveWithFullResponse: true,
+      simple: false,
+    });
+
+    response.statusCode.should.equal(400);
+    response.body.type.should.equal('error');
+    response.body.errors.should.to.have.members(['Invalid Login Credential']);
+  }
+
+  @test('POST /auth/sign-in Invalid Username -> should return 400 ERROR "Invalid Login Credential"')
+  public async signInUsernameError() {
+    const response = await request({
+      method: 'POST',
+      url: `${this.requestUrl}/sign-in`,
+      json: true,
+      body: {
+        username: this.usersFixtures[this.userDataIndex + 1].username,
+        password: this.password,
       },
       resolveWithFullResponse: true,
       simple: false,

@@ -18,10 +18,6 @@ for (let i = 0; i <= 5; i++) {
   });
 }
 
-export const userFixtures = {
-  user,
-};
+export const userData = user;
 
-export const usersFixtures = {
-  users,
-};
+export const usersData = users;

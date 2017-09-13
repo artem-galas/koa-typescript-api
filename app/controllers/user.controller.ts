@@ -5,7 +5,7 @@ import * as passport from 'koa-passport';
 import {IController} from '../libs/controller.interface';
 import {RenderCtx} from '../libs/render.class';
 
-import {IUserModel, User} from '../models/user.model';
+import {IPlainUser, IUserModel, User} from '../models/user.model';
 
 class UserController implements IController {
 
@@ -46,7 +46,7 @@ class UserController implements IController {
 
   private async index(ctx: Koa.Context) {
     const users: Array<IUserModel> = await User.find({});
-    const usersData = users.map((user: IUserModel) => user.toPlainObject());
+    const usersData: Array<IPlainUser> = users.map((user: IUserModel) => user.toPlainObject());
     this.renderCtx
       .renderSuccess(
         ctx,
@@ -56,23 +56,7 @@ class UserController implements IController {
   }
 
   private async show(ctx: Koa.Context, next) {
-    await passport.authenticate('jwt', {session: false})(ctx, next);
-    if (!ctx.state.user) {
-      this.renderCtx.renderFaild(
-        ctx,
-        400,
-        'users',
-        ['Invalid Token']);
-      return;
-    } else if (!ctx.state.user._id.equals(this.user._id)) {
-      this.renderCtx.renderFaild(
-        ctx,
-        400,
-        'users',
-        ['Invalid Token']);
-      return;
-    }
-
+    await this.checkUser(ctx, next);
     const user: IUserModel = ctx.state.user;
     this.renderCtx
       .renderSuccess(
@@ -82,8 +66,9 @@ class UserController implements IController {
         user.toPlainObject());
   }
 
-  private async update(ctx: Koa.Context) {
-    let user: IUserModel = this.user;
+  private async update(ctx: Koa.Context, next) {
+    await this.checkUser(ctx, next);
+    let user: IUserModel = ctx.state.user;
     await user.update({
       name: ctx.request.body.name,
       email: ctx.request.body.email,
@@ -98,8 +83,9 @@ class UserController implements IController {
         user.toPlainObject());
   }
 
-  private async destroy(ctx: Koa.Context) {
-    const user: IUserModel = this.user;
+  private async destroy(ctx: Koa.Context, next) {
+    await this.checkUser(ctx, next);
+    const user: IUserModel = ctx.state.user;
     await user.remove();
 
     this.renderCtx
@@ -117,6 +103,17 @@ class UserController implements IController {
       return ctx.throw(404);
     }
     return next();
+  }
+
+  private async checkUser(ctx: Koa.Context, next) {
+    await passport.authenticate('jwt', {session: false})(ctx, next);
+    if (!ctx.state.user) {
+      ctx.throw(400, 'Invalid Token');
+    } else if (!ctx.state.user._id.equals(this.user._id)) {
+      ctx.throw(400, 'Invalid Token');
+    } else {
+      return;
+    }
   }
 }
 

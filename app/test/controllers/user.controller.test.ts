@@ -1,67 +1,41 @@
 import { suite, test } from 'mocha-typescript';
 import * as request from 'request-promise-native';
-import * as chai from 'chai';
-import server from '../../app';
 import * as config from 'config';
 
 import {Model} from 'mongoose';
-import * as mongoose from 'mongoose';
-import { userFixtures, usersFixtures } from '../fixtures/user.fixture';
+import {userData} from '../fixtures/user.fixture';
 
-import {IUserModel, IUser, User} from '../../models/user.model';
+import * as jwt from 'jwt-simple';
+
+import { IUserModel, User} from '../../models/user.model';
+import {TestController} from './test.controller.interface';
 
 /**
  * static before method run BEFORE @suite
  * before method run for EACH @test
- * static after and after the same of before
  */
 
-@suite
-class UserControllerTest {
+@suite('User Controller without Authorize')
+class UserControllerOutAuth extends TestController {
 
-  public static app;
-
-  public static before() {
-    console.log(`Test Server RUN on ${3333} port`);
-    this.app = server.listen(3333);
-    chai.should();
-  }
-
-  public static async after() {
-    console.log('Test Server CLOSE');
-    this.app.close();
-  }
-
-  private User: Model<IUserModel>;
-  private requestUrl = config.get('server.url');
-
-  public async before() {
-    console.log('Create USERS Fixtures');
-
-    for (const user of usersFixtures.users) {
-      await User.create(user);
-    }
-  }
-
-  public async after() {
-    console.log('DROP test database');
-    await mongoose.connection.db.dropDatabase();
+  constructor() {
+    super('users');
   }
 
   @test('POST /users -> should create a new User')
   public async create() {
     const response = await request({
       method: 'POST',
-      url: 'http://localhost:3333/users',
+      url: `${this.requestUrl}`,
       json: true,
-      body: userFixtures.user,
+      body: this.userData,
       resolveWithFullResponse: true,
     });
 
     const responseBodyData = {
-      name: userFixtures.user.name,
-      username: userFixtures.user.username,
-      email: userFixtures.user.email,
+      name: this.userData.name,
+      username: this.userData.username,
+      email: this.userData.email,
     };
 
     response.statusCode.should.equal(201);
@@ -73,7 +47,7 @@ class UserControllerTest {
   public async index() {
     const response = await request({
       method: 'GET',
-      url: `${this.requestUrl}/users`,
+      url: `${this.requestUrl}`,
       json: true,
       resolveWithFullResponse: true,
     });
@@ -81,12 +55,83 @@ class UserControllerTest {
     const responseBodyData = response.body.data;
     const indexAssert = 0;
 
-    // Remove unused property
-    delete usersFixtures.users[indexAssert].password;
-
     response.statusCode.should.equal(200);
     responseBodyData.should.to.be.a('array');
-    responseBodyData.length.should.equal(usersFixtures.users.length);
-    responseBodyData[indexAssert].should.to.have.deep.equal(usersFixtures.users[indexAssert]);
+    responseBodyData.length.should.equal(this.usersFixtures.length);
+    responseBodyData[indexAssert].should.to.have.deep.equal(this.usersFixtures[indexAssert].toPlainObject());
+  }
+}
+
+@suite('User Controller with Authorize')
+class UserControllerWithAuth extends TestController {
+  private authUser: IUserModel;
+  private token: string;
+
+  constructor() {
+    super('users');
+  }
+
+  public async before() {
+    this.authUser = await User.create(userData);
+    const payload = {
+      id: this.authUser._id,
+      name: this.authUser.name,
+    };
+    this.token = jwt.encode(payload, config.get<string>('jwtSecret'));
+
+    await super.before();
+  }
+
+  @test('GET /users/:username -> Should return current user profile')
+  public async show() {
+    const response = await request({
+      method: 'GET',
+      headers: {
+        authorization: `${this.token}`,
+      },
+      url: `${this.requestUrl}/${this.authUser.username}`,
+      json: true,
+      resolveWithFullResponse: true,
+    });
+
+    const responseBodyData = this.authUser.toPlainObject();
+
+    response.statusCode.should.equal(200);
+    response.body.type.should.equal('users');
+    response.body.data.should.to.deep.equal(responseBodyData);
+  }
+
+  @test('GET /users/:username -> Should return ERROR 400 "Invalid Token"')
+  public async showError() {
+    // Send different username to url
+    const response = await request({
+      method: 'GET',
+      headers: {
+        authorization: `${this.token}`,
+      },
+      url: `${this.requestUrl}/${this.usersFixtures[1].username}`,
+      json: true,
+      resolveWithFullResponse: true,
+      simple: false,
+    });
+
+    response.statusCode.should.equal(400);
+    response.body.type.should.equal('error');
+    response.body.errors.should.to.have.members(['Invalid Token']);
+  }
+
+  @test('GET /users/:username -> Should return ERROR 404 "Not Found"')
+  public async showErrorNotFound() {
+    // Send different username to url
+    const response = await request({
+      method: 'GET',
+      url: `${this.requestUrl}/not_found`,
+      json: true,
+      resolveWithFullResponse: true,
+      simple: false,
+    });
+
+    response.statusCode.should.equal(404);
+    response.body.errors.should.to.have.members(['Not Found']);
   }
 }

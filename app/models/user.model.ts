@@ -1,25 +1,29 @@
 import {Document, Schema, Model, model} from 'mongoose';
+import * as mongoose from 'mongoose';
 import * as config from 'config';
 import * as crypto from 'crypto';
 
-export interface IUser {
+export interface IPlainUser {
   name: string;
   username: string;
   email: string;
+}
+
+export interface IUser extends IPlainUser {
   password: string;
 }
 
-export interface IUserModel extends IUser, Document {
-  id?: Schema.Types.ObjectId;
+export interface IUserModel extends IUser, mongoose.Document {
   passwordHash?: string;
   salt?: string;
   createdAt?: Date;
   updatedAt?: Date;
   checkPassword(password: string): boolean;
-  toPlainObject(): object;
+  toPlainObject(): IPlainUser;
 }
 
 const userSchema: Schema = new Schema({
+  id: mongoose.Schema.Types.ObjectId,
   name: {
     type: String,
     required: 'Name is required',
@@ -93,13 +97,12 @@ userSchema.methods.checkPassword = function(password): boolean {
       config.get<number>('crypto.hash.length'), 'sha1').toString() === this.passwordHash;
 };
 
-userSchema.methods.toPlainObject = function() {
+userSchema.methods.toPlainObject = function(): IPlainUser {
   return {
     name: this.name,
     username: this.username,
     email: this.email,
   };
-
 };
 
 export const User: Model<IUserModel> = model<IUserModel>('User', userSchema);
