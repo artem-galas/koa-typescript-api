@@ -3,6 +3,7 @@ import * as request from 'request-promise-native';
 
 import {Model} from 'mongoose';
 import {TestController} from './test.controller.interface';
+import {booksData} from '../fixtures/book.fixture';
 
 @suite.only('Book Controller')
 class BookControllerTest extends TestController {
@@ -26,5 +27,20 @@ class BookControllerTest extends TestController {
     response.statusCode.should.equal(201);
     response.body.type.should.equal('books');
     response.body.data.should.to.deep.equal(responseBody);
+  }
+
+  @test('GET /books -> should return array of Books')
+  public async index() {
+    const response = await request({
+      method: 'GET',
+      url: this.requestUrl,
+      json: true,
+      resolveWithFullResponse: true,
+    });
+
+    console.log(response.body);
+    response.body['data'].length.should.equal(6);
+    response.body.type.should.equal('books');
+    response.body['data'][0].should.to.deep.equal(this.booksFixtures[0].toPlainObject());
   }
 }

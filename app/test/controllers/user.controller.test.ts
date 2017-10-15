@@ -10,11 +10,6 @@ import * as jwt from 'jwt-simple';
 import { IUserModel, User} from '../../models/user.model';
 import {TestController} from './test.controller.interface';
 
-/**
- * static before method run BEFORE @suite
- * before method run for EACH @test
- */
-
 @suite('User Controller without Authorize')
 class UserControllerOutAuth extends TestController {
 

@@ -3,7 +3,7 @@ import * as passport from 'koa-passport';
 import * as Router from 'koa-router';
 
 import {IController} from '../libs/controller.interface';
-import {IBookModel, Book} from '../models/book.model';
+import {IBookModel, Book, IBook} from '../models/book.model';
 import {RenderCtx} from '../libs/render.class';
 
 export class BookController implements IController {
@@ -36,12 +36,13 @@ export class BookController implements IController {
 
   private async index(ctx: Koa.Context) {
     const books: Array<IBookModel> = await Book.find({});
+    const booksData: Array<IBook> = books.map((book: IBookModel) => book.toPlainObject());
     this.renderCtx
       .renderSuccess(
         ctx,
         200,
         'books',
-        books);
+        booksData);
   }
 }
 

@@ -5,13 +5,19 @@ import * as config from 'config';
 import * as mongoose from 'mongoose';
 import {userData, usersData} from '../fixtures/user.fixture';
 import {IUserModel, User} from '../../models/user.model';
-import {bookData} from '../fixtures/book.fixture';
+import {bookData, booksData} from '../fixtures/book.fixture';
+import {Book, IBookModel} from '../../models/book.model';
 
 export interface ITestController {
   requestUrl: string;
   before(): any;
   after(): any;
 }
+
+/**
+ * static before method run BEFORE @suite
+ * before method run for EACH @test
+ */
 
 export class TestController implements ITestController {
   public static app;
@@ -31,6 +37,7 @@ export class TestController implements ITestController {
   public userData = userData;
   public usersFixtures: Array<IUserModel> = [];
   public bookData = bookData;
+  public booksFixtures: Array<IBookModel> = [];
 
   constructor(path: string) {
     this.requestUrl = `${config.get<string>('server.url')}/${path}`;
@@ -39,6 +46,9 @@ export class TestController implements ITestController {
   public async before() {
     for (const user of usersData) {
       this.usersFixtures.push(await User.create(user));
+    }
+    for (const book of booksData) {
+      this.booksFixtures.push(await Book.create(book));
     }
   }
 

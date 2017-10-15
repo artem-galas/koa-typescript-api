@@ -1,6 +1,7 @@
 import {Document, Schema, Model, model, NativeError} from 'mongoose';
 import * as mongoose from 'mongoose';
 import * as crypto from 'crypto';
+import * as slug from 'slug';
 
 export interface IBook {
   name: string;
@@ -42,8 +43,8 @@ bookSchema.methods.toPlainObject = function(): IBook {
   };
 };
 
-bookSchema.post('save', function(doc: Document, next: (err?: NativeError) => void) {
-  this.slug = `${this.name}-${crypto.randomBytes(2).toString('base64')}`;
+bookSchema.pre('save', function(next: (err?: NativeError) => void) {
+  this.slug = slug(`${this.name}-${crypto.randomBytes(2).toString('base64')}`, {lower: true});
   next();
 });
 
