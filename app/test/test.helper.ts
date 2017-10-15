@@ -1,12 +1,12 @@
 import * as chai from 'chai';
-import server from '../../app';
+import server from '../app';
 import * as config from 'config';
 
 import * as mongoose from 'mongoose';
-import {userData, usersData} from '../fixtures/user.fixture';
-import {IUserModel, User} from '../../models/user.model';
-import {bookData, booksData} from '../fixtures/book.fixture';
-import {Book, IBookModel} from '../../models/book.model';
+import {userData, usersData} from './fixtures/user.fixture';
+import {IUserModel, User} from '../models/user.model';
+import {bookData, booksData} from './fixtures/book.fixture';
+import {Book, IBookModel} from '../models/book.model';
 
 export interface ITestController {
   requestUrl: string;

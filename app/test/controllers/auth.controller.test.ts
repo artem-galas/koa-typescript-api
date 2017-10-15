@@ -5,7 +5,7 @@ import {Model} from 'mongoose';
 import { usersData } from '../fixtures/user.fixture';
 
 import {IUserModel} from '../../models/user.model';
-import {TestController} from './test.controller.interface';
+import {TestController} from '../test.helper';
 
 @suite('Auth Controller')
 class AuthControllerTest extends TestController {

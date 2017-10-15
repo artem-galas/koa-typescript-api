@@ -2,8 +2,7 @@ import { suite, test } from 'mocha-typescript';
 import * as request from 'request-promise-native';
 
 import {Model} from 'mongoose';
-import {TestController} from './test.controller.interface';
-import {booksData} from '../fixtures/book.fixture';
+import {TestController} from '../test.helper';
 
 @suite.only('Book Controller')
 class BookControllerTest extends TestController {
@@ -38,7 +37,6 @@ class BookControllerTest extends TestController {
       resolveWithFullResponse: true,
     });
 
-    console.log(response.body);
     response.body['data'].length.should.equal(6);
     response.body.type.should.equal('books');
     response.body['data'][0].should.to.deep.equal(this.booksFixtures[0].toPlainObject());

@@ -8,7 +8,7 @@ import {userData} from '../fixtures/user.fixture';
 import * as jwt from 'jwt-simple';
 
 import { IUserModel, User} from '../../models/user.model';
-import {TestController} from './test.controller.interface';
+import {TestController} from '../test.helper';
 
 @suite('User Controller without Authorize')
 class UserControllerOutAuth extends TestController {
