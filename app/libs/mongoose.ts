@@ -7,7 +7,7 @@ class MongooseLib {
     if (process.env.MONGOOSE_DEBUG) {
       mongoose.set('debug', true);
     }
-    mongoose.connect(config.get<string>('mongoose.uri'), config.get<string>('mongoose.options'));
+    mongoose.connect(config.get<string>('mongoose.uri'), config.get('mongoose.options'));
     mongoose.plugin(uniqValidator);
   }
 }
