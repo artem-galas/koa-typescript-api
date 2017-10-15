@@ -28,6 +28,43 @@ class BookControllerTest extends TestController {
     response.body.data.should.to.deep.equal(responseBody);
   }
 
+  @test('POST /books -> Error while create new Book -> Not pass name parameter')
+  public async createError1() {
+    const response = await request({
+      method: 'POST',
+      url: this.requestUrl,
+      json: true,
+      body: {
+        authors: [this.bookData.authors[0]],
+        price: this.bookData.price,
+      },
+      resolveWithFullResponse: true,
+      simple: false,
+    });
+
+    response.statusCode.should.equal(400);
+    response.body['errors'].should.include('Name is required');
+  }
+
+  @test.only('POST /books -> Error while create new Book -> Not pass name parameter')
+  public async createError2() {
+    const response = await request({
+      method: 'POST',
+      url: this.requestUrl,
+      json: true,
+      body: {
+        authors: [this.bookData.authors[0]],
+      },
+      resolveWithFullResponse: true,
+      simple: false,
+    });
+
+    response.statusCode.should.equal(400);
+    response.body['errors'].should.have.lengthOf(2);
+    response.body['errors'].should.include('Name is required');
+    response.body['errors'].should.include('Price is required');
+  }
+
   @test('GET /books -> should return array of Books')
   public async index() {
     const response = await request({

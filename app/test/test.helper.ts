@@ -6,7 +6,7 @@ import * as mongoose from 'mongoose';
 import {userData, usersData} from './fixtures/user.fixture';
 import {IUserModel, User} from '../models/user.model';
 import {bookData, booksData} from './fixtures/book.fixture';
-import {Book, IBookModel} from '../models/book.model';
+import {Book, IBook, IBookModel} from '../models/book.model';
 
 export interface ITestController {
   requestUrl: string;
@@ -36,7 +36,7 @@ export class TestController implements ITestController {
   public requestUrl: string;
   public userData = userData;
   public usersFixtures: Array<IUserModel> = [];
-  public bookData = bookData;
+  public bookData: IBook= bookData;
   public booksFixtures: Array<IBookModel> = [];
 
   constructor(path: string) {
